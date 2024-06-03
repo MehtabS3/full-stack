@@ -23,9 +23,8 @@ const TicketForm = () => {
     if (!res.ok) {
       throw new Error("Failed to create Ticket.");
     }
-
-    router.refresh();
     router.push("/");
+    router.refresh();
   };
   const startingTickeData = {
     title: "",
