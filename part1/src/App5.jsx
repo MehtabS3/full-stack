@@ -1,11 +1,20 @@
 import { useState } from "react";
-
+import { useEffect } from "react";
+import axios from "axios";
+import phone from "./services/phone";
 const App = () => {
-  const [persons, setPersons] = useState([{ name: "Arto Hellas" }]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNum, setNewNum] = useState("");
   const [searchName, setNewSearch] = useState("");
 
+  useEffect(() => {
+    console.log("effect");
+    axios.get("http://localhost:3001/persons").then((response) => {
+      console.log("promise fulfilled");
+      setPersons(response.data);
+    });
+  }, []);
   const addPers = (event) => {
     event.preventDefault();
     const personExists = persons.some((person) => person.name === newName);
@@ -16,9 +25,11 @@ const App = () => {
         name: newName,
         number: newNum,
       };
-      setPersons(persons.concat(newObj));
-      setNewName("");
-      setNewNum("");
+      phone.create(newObj).then((returnedPhone) => {
+        setPersons(persons.concat(returnedPhone));
+        setNewName("");
+        setNewNum("");
+      });
     }
   };
 
@@ -42,6 +53,13 @@ const App = () => {
     console.log(event.target.value);
     setNewSearch(event.target.value);
   };
+  const handledelete = (id) => {
+    if (window.confirm("Are you sure?")) {
+      axios.delete(`http://localhost:3001/persons/${id}`).then(() => {
+        setPersons(persons.filter((person) => person.id !== id));
+      });
+    }
+  };
   return (
     <div>
       <h2>Phonebook</h2>
@@ -60,8 +78,11 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       <ul>
-        {personSearch.map((person, index) => (
-          <li key={index}>{person.name}</li>
+        {personSearch.map((person) => (
+          <li key={person.id}>
+            {person.name} - {person.number}{" "}
+            <button onClick={() => handledelete(person.id)}>delete</button>
+          </li>
         ))}
       </ul>
     </div>
